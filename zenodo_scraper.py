@@ -118,7 +118,6 @@ class ZenodoScraper:
             self.download_file(file_info['url'], file_info['filename'])
             time.sleep(0.5)  # Be nice to the server
 
-        print("\n" + "=" * 60)
         print("Download complete!")
 
 
