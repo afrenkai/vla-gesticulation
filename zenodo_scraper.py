@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from tqdm import tqdm
 from pathlib import Path
 import time
+import zipfile
 
 
 class ZenodoScraper:
@@ -53,12 +54,45 @@ class ZenodoScraper:
 
         return unique_files
 
-    def download_file(self, url, filename, chunk_size=8192):
-        """Download a file with progress bar."""
+    def unzip_file(self, zip_path, extract_to=None):
+        """Unzip a file to the specified directory."""
+        if extract_to is None:
+            extract_to = zip_path.parent / zip_path.stem
+
+        extract_to.mkdir(exist_ok=True)
+
+        print(f"Extracting: {zip_path.name}")
+        try:
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                # Get list of files to extract for progress bar
+                file_list = zip_ref.namelist()
+
+                with tqdm(total=len(file_list), desc="Extracting", unit="file") as pbar:
+                    for file in file_list:
+                        zip_ref.extract(file, extract_to)
+                        pbar.update(1)
+
+            print(f"Successfully extracted to: {extract_to}")
+            return extract_to
+
+        except zipfile.BadZipFile:
+            print(f"Error: {zip_path.name} is not a valid zip file")
+            return None
+        except Exception as e:
+            print(f"Error extracting {zip_path.name}: {e}")
+            return None
+
+    def download_file(self, url, filename, chunk_size=8192, auto_unzip=True):
+        """Download a file with progress bar and optionally unzip it."""
         filepath = self.download_dir / filename
 
         if filepath.exists():
-            print(f"{filename} already exists, skipping...")
+            print(f"{filename} already exists, skipping download...")
+            # Still try to unzip if it's a zip file and auto_unzip is enabled
+            if auto_unzip and filename.lower().endswith('.zip'):
+                extract_dir = filepath.parent / filepath.stem
+                if not extract_dir.exists():
+                    self.unzip_file(filepath)
             return
 
         print(f"\nDownloading: {filename}")
@@ -84,17 +118,23 @@ class ZenodoScraper:
 
             print(f"Successfully downloaded: {filename}")
 
+            # Auto-unzip if it's a zip file
+            if auto_unzip and filename.lower().endswith('.zip'):
+                self.unzip_file(filepath)
+
         except Exception as e:
             print(f"Error downloading {filename}: {e}")
             if filepath.exists():
                 filepath.unlink()
 
-    def download_all(self, file_filter=None):
+    def download_all(self, file_filter=None, auto_unzip=True):
         """Download all files from the Zenodo record.
 
         Args:
             file_filter: Optional list of filenames to download.
                         If None, downloads all files.
+            auto_unzip: If True, automatically unzip .zip files after download.
+                       Default is True.
         """
         files = self.get_file_links()
 
@@ -115,7 +155,7 @@ class ZenodoScraper:
 
         for i, file_info in enumerate(files, 1):
             print(f"\n[{i}/{len(files)}]")
-            self.download_file(file_info['url'], file_info['filename'])
+            self.download_file(file_info['url'], file_info['filename'], auto_unzip=auto_unzip)
             time.sleep(0.5)  # Be nice to the server
 
         print("Download complete!")
