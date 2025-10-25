@@ -1,0 +1,7 @@
+torch
+lerobot
+librosa
+transformers
+requests
+beautifulsoup4
+tqdm
