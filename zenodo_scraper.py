@@ -16,7 +16,6 @@ class ZenodoScraper:
         })
 
     def get_file_links(self):
-        """Scrape the Zenodo page to get all download links."""
         print(f"Fetching page: {self.record_url}")
         response = self.session.get(self.record_url)
         response.raise_for_status()

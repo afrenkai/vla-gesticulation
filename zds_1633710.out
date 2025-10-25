@@ -1,0 +1,21 @@
+Fetching page: https://zenodo.org/records/6998231
+
+Found 5 file(s):
+  - LICENSE.txt?download=1
+  - README.txt?download=1
+  - trn.zip?download=1
+  - tst.zip?download=1
+  - val.zip?download=1
+
+Download directory: /home/afrenk/vla-gesticulation/genea_dataset
+
+[1/5]
+LICENSE.txt?download=1 already exists, skipping...
+
+[2/5]
+README.txt?download=1 already exists, skipping...
+
+[3/5]
+
+Downloading: trn.zip?download=1
+URL: https://zenodo.org/records/6998231/files/trn.zip?download=1
